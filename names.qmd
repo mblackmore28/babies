@@ -4,7 +4,6 @@ author: "mblackmore"
 format:
   html:
     theme: flatly
-    code-fold: true
 execute:
   echo: false
   warning: false
@@ -30,7 +29,9 @@ baby_names <- read_csv(
   select(year, sex, name, n)
 ```
 
-Using records from the US Social Security Administration from 1880 to 2025, we can observe how popular baby names rise and fall across different eras.
+## How Baby Names Rise and Fall
+
+Every year since 1880, the United States Social Security Administration has recorded the given names of newborns from social security card applications. This rich historical record allows us to trace cultural shifts, popular trends, and generational naming patterns across more than 140 years.
 
 ```{r}
 #| label: plot-names
@@ -56,5 +57,87 @@ baby_names |>
     legend.position = "bottom"
   )
 ```
+
+### Notable Patterns
+
+The chart highlights three distinct trajectories in American naming history:
+
+- **Mary** was the undisputed top choice for decades, consistently given to tens of thousands of baby girls each year and peaking during the 1920s before entering a long, steady decline.
+- **Linda** shows an explosive, sharp peak in the late 1940s and early 1950s—one of the fastest-rising names in American history—before tapering off just as rapidly.
+- **Emma** demonstrates a classic revival: popular in the late 19th century, nearly disappearing in the mid-20th century, and surging back to the top of the charts in recent decades.
+
+## The Death of Name Consensus
+
+Perhaps the single largest demographic change in American baby naming is the collapse of common names. In the late 19th century, parents drew from a very small pool of traditional names: nearly **45% of all newborn boys** and **25% of all newborn girls** were given a name in the top 10.
+
+Today, parents prize individuality far more. The top 10 names now account for less than **8%** of babies for both sexes.
+
+```{r}
+#| label: plot-diversity
+#| fig-width: 8
+#| fig-height: 5
+baby_names |>
+  group_by(year, sex) |>
+  mutate(prop = n / sum(n), rank = min_rank(desc(n))) |>
+  filter(rank <= 10) |>
+  summarize(top10_share = sum(prop), .groups = "drop") |>
+  mutate(sex_label = if_else(sex == "F", "Female", "Male")) |>
+  ggplot(aes(x = year, y = top10_share, color = sex_label)) +
+  geom_line(linewidth = 1.1) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_color_manual(values = c("Female" = "#d95f02", "Male" = "#1b9e77")) +
+  labs(
+    title = "The Vanishing Consensus: Share of Babies Given a Top 10 Name",
+    subtitle = "Percentage of newborns receiving one of the 10 most common names (1880–2025)",
+    x = "Year",
+    y = "Share of All Babies",
+    color = "Sex",
+    caption = "Source: US Social Security Administration"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+```
+
+## Pop Culture Meteors: The Television Effect
+
+In recent decades, pop culture has replaced religion and family lineage as a major source of naming inspiration. Media phenomena can catapult completely novel names into national consciousness almost overnight.
+
+A prime example is HBO's *Game of Thrones*, which debuted in 2011:
+
+- **Arya** existed sparingly before 2011, but surged past 3,000 newborns a year as the show reached its peak.
+- **Khaleesi**—not even an actual character name in George R.R. Martin's books, but a Dothraki title meaning "queen"—went from nonexistent before 2011 to naming more than 500 American girls each year at its height.
+
+```{r}
+#| label: plot-pop-culture
+#| fig-width: 8
+#| fig-height: 5
+baby_names |>
+  filter(name %in% c("Arya", "Khaleesi"), sex == "F", year >= 2000) |>
+  ggplot(aes(x = year, y = n, color = name)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 2011, linetype = "dashed", color = "gray50") +
+  annotate("text", x = 2011.3, y = 2600, label = "Game of Thrones\npremieres (2011)", hjust = 0, size = 3.5, color = "gray30") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_color_manual(values = c("Arya" = "#7570b3", "Khaleesi" = "#e7298a")) +
+  labs(
+    title = "The 'Game of Thrones' Effect",
+    subtitle = "Annual counts for girls named Arya and Khaleesi (2000–2025)",
+    x = "Year",
+    y = "Number of Babies",
+    color = "Name",
+    caption = "Source: US Social Security Administration"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+```
+
+
 
 
