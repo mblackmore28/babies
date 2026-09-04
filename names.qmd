@@ -1,18 +1,23 @@
 ---
 title: "Baby Names"
 author: "mblackmore"
-format: html
+format:
+  html:
+    theme: flatly
+    code-fold: true
+execute:
+  echo: false
+  warning: false
+  message: false
 ---
 
 ```{r}
 #| label: setup
-#| message: false
 library(tidyverse)
 ```
 
 ```{r}
 #| label: read-data
-#| message: false
 files <- list.files("data", pattern = "^yob.*\\.txt$", full.names = TRUE)
 
 baby_names <- read_csv(
@@ -25,22 +30,31 @@ baby_names <- read_csv(
   select(year, sex, name, n)
 ```
 
+Using records from the US Social Security Administration from 1880 to 2025, we can observe how popular baby names rise and fall across different eras.
+
 ```{r}
 #| label: plot-names
+#| fig-width: 8
+#| fig-height: 5
 baby_names |>
   filter(name %in% c("Mary", "Linda", "Emma"), sex == "F") |>
   ggplot(aes(x = year, y = n, color = name)) +
-  geom_line(linewidth = 1) +
+  geom_line(linewidth = 1.1) +
   scale_y_continuous(labels = scales::comma) +
+  scale_color_brewer(palette = "Set1") +
   labs(
     title = "Popularity of Selected Names Over Time",
-    subtitle = "Annual counts for female babies in the US (1880–2025)",
+    subtitle = "Annual counts for female babies in the United States (1880–2025)",
     x = "Year",
     y = "Number of Babies",
     color = "Name",
     caption = "Source: US Social Security Administration"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
 ```
 
 
