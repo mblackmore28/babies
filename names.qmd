@@ -1,0 +1,46 @@
+---
+title: "Baby Names"
+author: "mblackmore"
+format: html
+---
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+```
+
+```{r}
+#| label: read-data
+#| message: false
+files <- list.files("data", pattern = "^yob.*\\.txt$", full.names = TRUE)
+
+baby_names <- read_csv(
+  files,
+  col_names = c("name", "sex", "n"),
+  col_types = "cci",
+  id = "file"
+) |>
+  mutate(year = parse_number(basename(file))) |>
+  select(year, sex, name, n)
+```
+
+```{r}
+#| label: plot-names
+baby_names |>
+  filter(name %in% c("Mary", "Linda", "Emma"), sex == "F") |>
+  ggplot(aes(x = year, y = n, color = name)) +
+  geom_line(linewidth = 1) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Popularity of Selected Names Over Time",
+    subtitle = "Annual counts for female babies in the US (1880–2025)",
+    x = "Year",
+    y = "Number of Babies",
+    color = "Name",
+    caption = "Source: US Social Security Administration"
+  ) +
+  theme_minimal()
+```
+
+
